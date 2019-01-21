@@ -28,15 +28,21 @@ fn main() -> Result<(), Error> {
         .subcommand(SubCommand::with_name("download_all")
             .alias("dl_all")
             .help("download all scans"))
+        .subcommand(SubCommand::with_name("delete")
+            .alias("rm")
+            .arg(Arg::with_name("name")
+                .required(true)
+                .help("name of file to download; expect full path in Doxie storage"))
+            .help("download a named scan"))
         .get_matches();
     let level_filter = if matches.is_present("verbose") { LevelFilter::Info } else { LevelFilter::Error };
     TermLogger::init(level_filter, Config::default()).unwrap();
 
     let doxie_base_url = discover::discover_doxie().unwrap_or_else(|| { eprintln!("Couldn't find Doxie"); exit(1); });
-    let doxie = doxie::Doxie::from_base_url_string(&doxie_base_url).expect("Should really be able to construct a Doxie struct from the URL");
+    let mut doxie = doxie::Doxie::from_base_url_string(&doxie_base_url).expect("Should really be able to construct a Doxie struct from the URL");
     info!("Found Doxie at {}", doxie.base_url);
     let scans = doxie.list_scans().expect("couldn't list scans");
-    match matches.subcommand() {  // guaranteed to exist by .required(true)
+    match matches.subcommand() {
         ("list", Some(_)) => {
             println!("scans = {:?}", scans);
             Ok(())
@@ -59,6 +65,15 @@ fn main() -> Result<(), Error> {
                 }
             }
             Ok(())
+        }
+        ("delete", Some(sub_matches)) => {
+            let name = sub_matches.value_of("name").unwrap();
+            let result = doxie.delete_scan_by_name(name);
+            match &result {
+                Ok(()) => { println!("{} → 🗑️", name); }
+                Err(_) => { println!("{} → ❌", name); }
+            }
+            result
         }
         _ => { panic!("illegal command") }
     }
