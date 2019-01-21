@@ -34,6 +34,9 @@ fn main() -> Result<(), Error> {
                 .required(true)
                 .help("name of file to download; expect full path in Doxie storage"))
             .help("download a named scan"))
+        .subcommand(SubCommand::with_name("delete_all")
+            .alias("rm_all")
+            .help("delete all scans"))
         .get_matches();
     let level_filter = if matches.is_present("verbose") { LevelFilter::Info } else { LevelFilter::Error };
     TermLogger::init(level_filter, Config::default()).unwrap();
@@ -72,6 +75,22 @@ fn main() -> Result<(), Error> {
             match &result {
                 Ok(()) => { println!("{} → 🗑️", name); }
                 Err(_) => { println!("{} → ❌", name); }
+            }
+            result
+        }
+        ("delete_all", Some(_)) => {
+            if scans.len() == 0 {
+                println!("nothing to delete");
+            }
+            let names: Vec<&str> = scans.iter().map(|se| se.name.as_str()).collect();
+            let result = doxie.delete_scans_by_names(&names);
+            match result {
+                Ok(()) => {
+                    for name in names.iter() {
+                        println!("{} → 🗑️", name);
+                    }
+                }
+                Err(_) => { println!("{} → ❌", names[0]); }
             }
             result
         }

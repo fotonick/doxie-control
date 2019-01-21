@@ -104,4 +104,20 @@ impl Doxie {
             bail!("Request returned status: {}", response.status());
         }
     }
+
+    pub fn delete_scans_by_names(&mut self, names: &Vec<&str>) -> Result<(), Error> {
+        let url = self.base_url.join("scans/delete.json")?;
+        info!("url = {}", url);
+        let json = json::stringify(names.to_owned());
+        info!("json = {}", json);
+        let request = self.client.post(url.as_str()).body(json.to_string());  // weirdly, must use body(), not json()
+        info!("request = {:?}", request);
+        let response = request.send()?;
+        if response.status().is_success() {
+            Ok(())
+        }
+        else {
+            bail!("Request returned status: {:?}", response);
+        }
+    }
 }
