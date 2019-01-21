@@ -38,16 +38,11 @@ impl Doxie {
         })
     }
 
-    pub fn _call_api(&mut self, path: &str) -> Result<String, Error> {
-        let url = self.base_url.join(path)?;
-        let mut response = self.client.get(url).send()?;
-        let text = response.text()?;
-        debug!("text = {:?}", text.to_owned());
-        Ok(text)
-    }
-
     pub fn list_scans(&mut self) -> Result<Vec<ScanEntry>, Error> {
-        let json_text = self._call_api("/scans.json")?;
+        let url = self.base_url.join("/scans.json")?;
+        let mut response = self.client.get(url).send()?;
+        let json_text = response.text()?;
+        debug!("json_text = {}", json_text.to_owned());
         let json = parse(&json_text)?;
         let mut result : Vec<ScanEntry> = vec![];
         match json {
