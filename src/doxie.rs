@@ -6,7 +6,7 @@ use chrono::{DateTime, Local};
 use chrono::offset::TimeZone;
 use failure::{bail, Error, Fail};
 use json::{JsonError, JsonValue, parse};
-use log::{debug, info};
+use log::info;
 use reqwest::Client;
 use url::Url;
 
