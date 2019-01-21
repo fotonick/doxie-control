@@ -1,3 +1,4 @@
+use std::fmt;
 use std::fs::File;
 use std::path::Path;
 
@@ -30,6 +31,12 @@ pub struct ScanEntry {
     pub modified: DateTime<Local>,
 }
 
+impl fmt::Display for ScanEntry {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ScanEntry {{\n    name: \"{}\",\n    size: {}\n    modified: \"{}\"\n}}", self.name, self.size, self.modified.format(TIME_FORMAT))
+    }
+}
+
 impl Doxie {
     pub fn from_base_url_string(url_string: &str) -> Result<Doxie, Error> {
         Ok(Doxie {
@@ -42,7 +49,7 @@ impl Doxie {
         let url = self.base_url.join("/scans.json")?;
         let mut response = self.client.get(url).send()?;
         let json_text = response.text()?;
-        debug!("json_text = {}", json_text.to_owned());
+        info!("received json_text = {}", json_text.to_owned());
         let json = parse(&json_text)?;
         let mut result : Vec<ScanEntry> = vec![];
         match json {

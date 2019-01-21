@@ -1,6 +1,8 @@
 mod discover;
 mod doxie;
 
+use std::process::exit;
+
 use clap::{app_from_crate, crate_name, crate_authors, crate_description, crate_version, Arg, SubCommand};
 use failure::Error;
 use log::info;
@@ -9,7 +11,6 @@ use simplelog::{
     LevelFilter,
     TermLogger,
 };
-use std::process::exit;
 
 fn main() -> Result<(), Error> {
     let matches = app_from_crate!()
@@ -47,7 +48,9 @@ fn main() -> Result<(), Error> {
     let scans = doxie.list_scans().expect("couldn't list scans");
     match matches.subcommand() {
         ("list", Some(_)) => {
-            println!("scans = {:?}", scans);
+            for se in scans.iter() {
+                println!("{}", se);
+            }
             Ok(())
         }
         ("download", Some(sub_matches)) => {
